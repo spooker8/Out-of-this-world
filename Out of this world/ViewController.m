@@ -18,10 +18,41 @@
 
 @implementation ViewController
 
+
+#pragma mark lazy instantions
+
+-(NSMutableArray *)planets
+{
+    
+    if (!_planets){
+        
+        _planets = [[NSMutableArray alloc] init];
+        
+    }
+    
+    return _planets;
+    
+}
+
+
+-(NSMutableArray*)addedSpaceObjects
+{
+    
+    if(!_addedSpaceObjects){
+        
+        _addedSpaceObjects = [[NSMutableArray alloc] init];
+    }
+    
+    return _addedSpaceObjects;
+    
+}
+
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.planets = [[NSMutableArray alloc]init];
+   
     
     for (NSMutableDictionary *planetData in [AstronomicalData allKnownPlanets])
     {
@@ -65,7 +96,7 @@
 }
 
 
-#pragma mark editviewcontroller delegate
+#pragma mark protocol editviewcontroller delegate
 
 -(void)didCancel
 {
@@ -78,15 +109,15 @@
 {
     
     
-    if (!self.addedSpaceObjects)
-    {
-        
-        self.addedSpaceObjects = [[NSMutableArray alloc] init];
-    }
     [self.addedSpaceObjects addObject:spaceObject];
     
-    NSLog(@"added");
+   
+    //NSUserdefault info is stored here.
+    
+    
     [self dismissViewControllerAnimated:YES completion:nil];
+    
+    [self.tableView reloadData];
     
 }
 
@@ -144,6 +175,11 @@
     if(indexPath.section == 1)
         //Use new space object to customize our cell
     {
+        ImageController *planet = [self.addedSpaceObjects objectAtIndex:indexPath.row];
+        cell.textLabel.text = planet.name;
+        cell.detailTextLabel.text= planet.nickname;
+        cell.imageView.image = planet.spaceImage;
+        
         
         
     }
@@ -162,19 +198,6 @@
     cell.backgroundColor = [UIColor clearColor];
     cell.textLabel.textColor = [UIColor whiteColor];
     
-//    if (indexPath.section == 0)
-//    {
-//        
-//        cell.backgroundColor = [UIColor redColor];
-//        
-//        
-//    } else {
-//        
-//        cell.backgroundColor = [UIColor blueColor];
-//        
-//    }
-    
-        
     
     return cell;
 }
@@ -203,9 +226,25 @@
         {
             
             DetailViewController *nextViewController = segue.destinationViewController;
-       
             NSIndexPath *path = [self.tableView indexPathForCell:sender];
-            nextViewController.spaceObject = self.planets[path.row];
+           
+            ImageController *selectedObject;
+            
+            if (path.section == 0)
+            {
+                
+                selectedObject = self.planets[path.row];
+                
+                
+            }
+            
+            else if (path.section == 1)
+            {
+                
+                selectedObject = self.addedSpaceObjects[path.row];
+                
+            }
+            nextViewController.spaceObject = selectedObject; //self.planets[path.row];
             
         
         }
@@ -220,7 +259,20 @@
                 
                DataViewController *targetViewController = segue.destinationViewController;
                 NSIndexPath *path = sender;
-                targetViewController.spaceObject = self.planets[path.row];
+                ImageController *selectedObject;
+                
+                if (path.section == 0)
+                {
+                    
+                    selectedObject = self.planets[path.row];
+                }
+                else if (path.section ==1){
+                    
+                    selectedObject = self.addedSpaceObjects[path.row];
+                }
+                
+                
+                targetViewController.spaceObject = selectedObject;// self.planets[path.row];
                
             }
             
